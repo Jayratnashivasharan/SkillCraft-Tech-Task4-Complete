@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — Task Manager</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">§</span>
+      <span class="brand-name">Ledger</span>
+    </div>
+
+    <div class="sidebar-section">
+      <p class="sidebar-label">Lists</p>
+      <ul class="list-nav" id="listNav">
+        <!-- lists injected here -->
+      </ul>
+      <button class="btn-add-list" id="btnAddList">
+        <span>+</span> New list
+      </button>
+    </div>
+
+    <div class="sidebar-section stats-block">
+      <p class="sidebar-label">Overview</p>
+      <div class="stat-row">
+        <span class="stat-dot dot-open"></span>
+        <span class="stat-text">Open</span>
+        <span class="stat-num" id="statOpen">0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-dot dot-due"></span>
+        <span class="stat-text">Due soon</span>
+        <span class="stat-num" id="statDue">0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-dot dot-done"></span>
+        <span class="stat-text">Completed</span>
+        <span class="stat-num" id="statDone">0</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-panel">
+
+    <header class="main-header">
+      <div>
+        <p class="eyebrow" id="todayDate">—</p>
+        <h1 class="list-title" id="currentListTitle">All Tasks</h1>
+      </div>
+
+      <div class="header-actions">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search tasks…">
+        </div>
+        <div class="btn-group filter-group" role="group" aria-label="Filter tasks">
+          <button class="btn-filter active" data-filter="all">All</button>
+          <button class="btn-filter" data-filter="active">Active</button>
+          <button class="btn-filter" data-filter="completed">Done</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Add task -->
+    <form id="taskForm" class="task-form">
+      <input type="text" id="taskInput" class="task-input" placeholder="Add a task — e.g. Draft quarterly report" required>
+      <input type="datetime-local" id="taskDateTime" class="task-datetime">
+      <select id="taskPriority" class="task-priority">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+      <button type="submit" class="btn-submit">Add task</button>
+    </form>
+
+    <!-- Task list -->
+    <section class="task-list-wrap">
+      <ul class="task-list" id="taskList"></ul>
+
+      <div class="empty-state" id="emptyState">
+        <span class="empty-mark">✓</span>
+        <p>Nothing here yet.</p>
+        <p class="empty-sub">Add your first task above to get started.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <input type="hidden" id="editId">
+
+          <label class="form-label small-label">Task</label>
+          <input type="text" id="editText" class="form-control mb-3" required>
+
+          <label class="form-label small-label">List</label>
+          <select id="editList" class="form-select mb-3"></select>
+
+          <label class="form-label small-label">Due date & time</label>
+          <input type="datetime-local" id="editDateTime" class="form-control mb-3">
+
+          <label class="form-label small-label">Priority</label>
+          <select id="editPriority" class="form-select mb-3">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-save" id="btnSaveEdit">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New list modal -->
+<div class="modal fade" id="listModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New list</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label small-label">List name</label>
+        <input type="text" id="newListName" class="form-control" placeholder="e.g. Personal, Work, Errands" maxlength="24">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-save" id="btnCreateList">Create list</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
